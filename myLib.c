@@ -145,4 +145,4 @@ void hideSprites() {
         shadowOAM[i].attr0 = ATTR0_HIDE;
     }
 }
-Added useless info lol
+
