@@ -1,5 +1,11 @@
 #include "myLib.h"
 #include "start.h"
+#include "gameBackground.h"
+#include "instructions.h"
+#include "pause.h"
+#include "lose.h"
+#include "spritesheet.h"
+#include "spritesheetNumbers.h"
 
 
 
@@ -8,6 +14,9 @@ enum {START, INSTRUCTIONS, GAME, PAUSE, LOSE};
 
 unsigned short buttons;
 unsigned short oldButtons;
+
+unsigned short hOff;
+int seed;
 
 int main() {
     initialize();
@@ -41,24 +50,70 @@ void initialize() {
     hideSprites();
     DMANow(3, shadowOAM, OAM, 512);
 
+    DMANow(3, spritesheetPal, SPRITEPALETTE, 256);
+    DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen / 2);
+    hideSprites();
+
+    hOff = 0;
     goToStart();
 }
 
 void start() {
+    seed++;
+    if (BUTTON_PRESSED(BUTTON_START)) {
+        srand(seed);
+        initGame();
+        goToGame();
+    }
+    if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        goToInstructions();
+    }
 
 }
 void instructions() {
+    if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        goToStart();
+    }
+    if (BUTTON_PRESSED(BUTTON_START)) {
+        goToGame();
+    }
 
 }
 void game() {
+    updateGame();
+    drawGame();
+    waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
+
+    hOff++;
+    REG_BG0HOFF = hOff;
+
+    if (BUTTON_PRESSED(BUTTON_START)) {
+        goToPause();
+    }
+    if (BUTTON_PRESSED(BUTTON_A)) {
+        goToLose();
+    }
 
 }
 void pause() {
-
+    if (BUTTON_PRESSED(BUTTON_START)) {
+        goToGame();
+    }
+    if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        goToStart();
+    }
+    
 }
 void lose() {
+    if (BUTTON_PRESSED(BUTTON_START)) {
+        goToStart();
+    }
 
 }
+
+
+
 
 
 void goToStart() {
@@ -73,17 +128,45 @@ void goToStart() {
 }
 
 void goToInstructions() {
+    hideSprites();
+    DMANow(3, shadowOAM, OAM, 512);
+
+    DMANow(3, instructionsPal, PALETTE, instructionsPalLen / 2);
+    DMANow(3, instructionsTiles, &CHARBLOCK[0], instructionsTilesLen / 2);
+    DMANow(3, instructionsMap, &SCREENBLOCK[28], instructionsMapLen / 2);
+
+    state = INSTRUCTIONS;
 
 }
 
 void goToGame() {
+    DMANow(3, gameBackgroundPal, PALETTE, gameBackgroundPalLen / 2);
+    DMANow(3, gameBackgroundTiles, &CHARBLOCK[0], gameBackgroundTilesLen / 2);
+    DMANow(3, gameBackgroundMap, &SCREENBLOCK[28], gameBackgroundMapLen / 2);
+
+    state = GAME;
 
 }
 
 void goToPause() {
+    hideSprites();
+    DMANow(3, shadowOAM, OAM, 512);
 
+    DMANow(3, pausePal, PALETTE, pausePalLen / 2);
+    DMANow(3, pauseTiles, &CHARBLOCK[0], pauseTilesLen / 2);
+    DMANow(3, pauseMap, &SCREENBLOCK[28], pauseMapLen / 2);
+
+    state = PAUSE;
 }
 
 void goToLose() {
+    hideSprites();
+    DMANow(3, shadowOAM, OAM, 512);
+
+    DMANow(3, losePal, PALETTE, losePalLen / 2);
+    DMANow(3, loseTiles, &CHARBLOCK[0], loseTilesLen / 2);
+    DMANow(3, loseMap, &SCREENBLOCK[28], loseMapLen / 2);
+
+    state = LOSE;
 
 }
