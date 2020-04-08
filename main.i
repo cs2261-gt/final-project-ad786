@@ -228,6 +228,8 @@ void initialize() {
 
 void start() {
     seed++;
+    (*(volatile unsigned short *)0x04000010) = 0;
+
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         srand(seed);
         initGame();
@@ -239,6 +241,8 @@ void start() {
 
 }
 void instructions() {
+    (*(volatile unsigned short *)0x04000010) = 0;
+
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))) {
         goToStart();
     }
@@ -259,12 +263,14 @@ void game() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToPause();
     }
-    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0))))) {
+    if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))) {
         goToLose();
     }
 
 }
 void pause() {
+    (*(volatile unsigned short *)0x04000010) = 0;
+
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToGame();
     }
@@ -274,6 +280,8 @@ void pause() {
 
 }
 void lose() {
+    (*(volatile unsigned short *)0x04000010) = 0;
+
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToStart();
     }

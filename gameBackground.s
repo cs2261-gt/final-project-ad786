@@ -9,7 +9,6 @@
 	.eabi_attribute 34, 0
 	.eabi_attribute 18, 4
 	.file	"gameBackground.c"
-	.text
 	.global	gameBackgroundPal
 	.global	gameBackgroundMap
 	.global	gameBackgroundTiles
@@ -1688,4 +1687,4 @@ gameBackgroundTiles:
 	.short	4369
 	.short	4369
 	.short	4369
-	.ident	"GCC: (devkitARM release 53) 9.1.0"
+	.ident	"GCC: (devkitARM release 47) 7.1.0"

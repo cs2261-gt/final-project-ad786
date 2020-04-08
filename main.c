@@ -60,6 +60,8 @@ void initialize() {
 
 void start() {
     seed++;
+    REG_BG0HOFF = 0;
+    
     if (BUTTON_PRESSED(BUTTON_START)) {
         srand(seed);
         initGame();
@@ -71,6 +73,8 @@ void start() {
 
 }
 void instructions() {
+    REG_BG0HOFF = 0;
+
     if (BUTTON_PRESSED(BUTTON_SELECT)) {
         goToStart();
     }
@@ -91,12 +95,14 @@ void game() {
     if (BUTTON_PRESSED(BUTTON_START)) {
         goToPause();
     }
-    if (BUTTON_PRESSED(BUTTON_A)) {
+    if (BUTTON_PRESSED(BUTTON_B)) {
         goToLose();
     }
 
 }
 void pause() {
+    REG_BG0HOFF = 0;
+
     if (BUTTON_PRESSED(BUTTON_START)) {
         goToGame();
     }
@@ -106,6 +112,8 @@ void pause() {
     
 }
 void lose() {
+    REG_BG0HOFF = 0;
+
     if (BUTTON_PRESSED(BUTTON_START)) {
         goToStart();
     }

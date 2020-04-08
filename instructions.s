@@ -9,7 +9,6 @@
 	.eabi_attribute 34, 0
 	.eabi_attribute 18, 4
 	.file	"instructions.c"
-	.text
 	.global	instructionsPal
 	.global	instructionsMap
 	.global	instructionsTiles
@@ -2744,4 +2743,4 @@ instructionsTiles:
 	.short	0
 	.short	0
 	.short	0
-	.ident	"GCC: (devkitARM release 53) 9.1.0"
+	.ident	"GCC: (devkitARM release 47) 7.1.0"
