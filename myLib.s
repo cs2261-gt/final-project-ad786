@@ -12,6 +12,7 @@
 	.text
 	.align	2
 	.global	setPixel3
+	.arch armv4t
 	.syntax unified
 	.arm
 	.fpu softvfp
@@ -23,10 +24,10 @@ setPixel3:
 	@ link register save eliminated.
 	ldr	r3, .L3
 	rsb	r1, r1, r1, lsl #4
-	add	r1, r0, r1, lsl #4
 	ldr	r3, [r3]
-	lsl	r1, r1, #1
-	strh	r2, [r3, r1]	@ movhi
+	add	r0, r0, r1, lsl #4
+	lsl	r0, r0, #1
+	strh	r2, [r3, r0]	@ movhi
 	bx	lr
 .L4:
 	.align	2
@@ -73,35 +74,35 @@ drawRect3:
 	@ Function supports interworking.
 	@ args = 4, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	cmp	r3, #0
+	subs	ip, r3, #0
 	bxle	lr
-	push	{r4, lr}
+	push	{r4, r5, lr}
 	mov	lr, #0
-	ldr	r4, .L18
-	add	r3, r1, r3
-	rsb	ip, r3, r3, lsl #4
+	ldr	r5, .L19
+	add	ip, r1, ip
+	ldr	r3, [r5]
 	rsb	r1, r1, r1, lsl #4
-	ldr	r3, [r4]
+	rsb	ip, ip, ip, lsl #4
+	add	r4, r0, r1, lsl #4
 	add	ip, r0, ip, lsl #4
-	add	r0, r0, r1, lsl #4
-	ldr	r1, [r4, #4]
-	orr	r2, r2, #-2130706432
-	add	ip, r3, ip, lsl #1
-	add	r0, r3, r0, lsl #1
+	ldr	r1, [r5, #4]
+	orr	r0, r2, #-2130706432
+	add	r2, r3, ip, lsl #1
+	add	r3, r3, r4, lsl #1
 .L12:
-	add	r3, sp, #8
+	add	ip, sp, #12
 	str	lr, [r1, #44]
-	str	r3, [r1, #36]
-	str	r0, [r1, #40]
-	add	r0, r0, #480
-	cmp	r0, ip
-	str	r2, [r1, #44]
+	str	ip, [r1, #36]
+	str	r3, [r1, #40]
+	add	r3, r3, #480
+	cmp	r3, r2
+	str	r0, [r1, #44]
 	bne	.L12
-	pop	{r4, lr}
+	pop	{r4, r5, lr}
 	bx	lr
-.L19:
+.L20:
 	.align	2
-.L18:
+.L19:
 	.word	.LANCHOR0
 	.size	drawRect3, .-drawRect3
 	.align	2
@@ -116,137 +117,138 @@ drawRect4:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
 	sub	sp, sp, #20
-	ldrb	ip, [sp, #56]	@ zero_extendqisi2
 	ldrb	lr, [sp, #56]	@ zero_extendqisi2
-	cmp	r3, #0
-	orr	ip, ip, lr, lsl #8
-	strh	ip, [sp, #14]	@ movhi
-	ble	.L20
-	sub	lr, r2, #2
-	sub	fp, r2, #1
-	asr	lr, lr, #1
-	add	r3, r3, r1
-	add	r9, r0, r2
-	orr	lr, lr, #-2130706432
-	ldr	ip, .L37
+	ldrb	r4, [sp, #56]	@ zero_extendqisi2
+	subs	ip, r3, #0
+	orr	lr, lr, r4, lsl #8
+	strh	lr, [sp, #14]	@ movhi
+	ble	.L21
+	add	ip, ip, r1
+	sub	r5, r2, #2
+	rsb	r4, ip, ip, lsl #4
+	asr	r5, r5, #1
+	sub	r10, r2, #1
+	ldr	r9, .L39
+	add	r8, r0, r2
+	rsb	r3, r1, r1, lsl #4
 	add	r7, r2, r2, lsr #31
-	asr	r5, fp, #1
-	rsb	r3, r3, r3, lsl #4
-	rsb	r1, r1, r1, lsl #4
+	add	r1, r0, r4, lsl #4
+	asr	r6, r10, #1
+	orr	r4, r5, #-2130706432
+	str	r4, [sp, #4]
 	asr	r7, r7, #1
-	sub	r9, r9, #1
-	str	lr, [sp, #4]
-	orr	lr, r5, #-2130706432
+	sub	r8, r8, #1
+	orr	r4, r6, #-2130706432
+	ldr	lr, [r9]
+	ldr	ip, [r9, #4]
 	add	r3, r0, r3, lsl #4
-	add	r1, r0, r1, lsl #4
-	ldm	ip, {r4, ip}
-	str	lr, [sp]
+	str	r4, [sp]
 	orr	r7, r7, #-2130706432
-	and	r9, r9, #1
+	and	r8, r8, #1
 	and	r0, r0, #1
-	and	r8, r2, #1
-	add	r10, sp, #14
-	b	.L33
-.L22:
-	cmp	r8, #0
-	beq	.L28
+	and	r5, r2, #1
+	add	r9, sp, #14
+	b	.L34
+.L23:
+	cmp	r5, #0
+	beq	.L29
 	cmp	r2, #1
-	ble	.L36
-	mov	r5, #0
-	add	lr, r1, #1
-	add	lr, lr, lr, lsr #31
-	bic	lr, lr, #1
-	add	lr, r4, lr
-	str	r5, [ip, #44]
-	str	r10, [ip, #36]
-	str	lr, [ip, #40]
-	ldr	lr, [sp]
-	str	lr, [ip, #44]
-.L36:
-	add	lr, r1, r1, lsr #31
-	bic	lr, lr, #1
-	ldrb	r5, [r4, lr]	@ zero_extendqisi2
-	ldrb	r6, [sp, #56]	@ zero_extendqisi2
-	orr	r5, r5, r6, lsl #8
-	strh	r5, [r4, lr]	@ movhi
-.L24:
-	add	r1, r1, #240
-	cmp	r1, r3
-	beq	.L20
-.L33:
+	ble	.L38
+	mov	r6, #0
+	add	r4, r3, #1
+	add	r4, r4, r4, lsr #31
+	bic	r4, r4, #1
+	add	r4, lr, r4
+	str	r6, [ip, #44]
+	str	r9, [ip, #36]
+	str	r4, [ip, #40]
+	ldr	r4, [sp]
+	str	r4, [ip, #44]
+.L38:
+	add	r4, r3, r3, lsr #31
+	bic	r4, r4, #1
+	ldrb	r6, [lr, r4]	@ zero_extendqisi2
+	ldrb	fp, [sp, #56]	@ zero_extendqisi2
+	orr	r6, r6, fp, lsl #8
+	strh	r6, [lr, r4]	@ movhi
+.L25:
+	add	r3, r3, #240
+	cmp	r3, r1
+	beq	.L21
+.L34:
 	cmp	r0, #0
-	bne	.L22
-	cmp	r8, #0
 	bne	.L23
-	add	lr, r1, r1, lsr #31
-	bic	lr, lr, #1
-	add	r1, r1, #240
-	add	lr, r4, lr
-	cmp	r1, r3
-	str	r8, [ip, #44]
-	str	r10, [ip, #36]
-	str	lr, [ip, #40]
+	cmp	r5, #0
+	bne	.L24
+	add	r4, r3, r3, lsr #31
+	bic	r4, r4, #1
+	add	r3, r3, #240
+	add	r4, lr, r4
+	cmp	r3, r1
+	str	r5, [ip, #44]
+	str	r9, [ip, #36]
+	str	r4, [ip, #40]
 	str	r7, [ip, #44]
-	bne	.L33
-.L20:
+	bne	.L34
+.L21:
 	add	sp, sp, #20
 	@ sp needed
 	pop	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
 	bx	lr
-.L23:
+.L24:
 	cmp	r2, #1
-	ble	.L25
-	add	lr, r1, r1, lsr #31
-	bic	lr, lr, #1
-	add	lr, r4, lr
+	ble	.L26
+	add	r4, r3, r3, lsr #31
+	bic	r4, r4, #1
+	add	r4, lr, r4
 	str	r0, [ip, #44]
-	str	r10, [ip, #36]
-	str	lr, [ip, #40]
-	ldr	lr, [sp]
-	str	lr, [ip, #44]
-.L25:
-	add	lr, fp, r1
-	add	lr, lr, lr, lsr #31
-	bic	lr, lr, #1
-	ldrh	r6, [r4, lr]
-	ldrb	r5, [sp, #56]	@ zero_extendqisi2
-	cmp	r9, #0
-	and	r5, r5, #255
-	andne	r6, r6, #255
-	andeq	r6, r6, #65280
-	orrne	r6, r6, r5, lsl #8
-	orreq	r6, r6, r5
-	strh	r6, [r4, lr]	@ movhi
-	b	.L24
-.L28:
+	str	r9, [ip, #36]
+	str	r4, [ip, #40]
+	ldr	r4, [sp]
+	str	r4, [ip, #44]
+.L26:
+	add	r4, r10, r3
+	add	r4, r4, r4, lsr #31
+	bic	r4, r4, #1
+	ldrh	fp, [lr, r4]
+	ldrb	r6, [sp, #56]	@ zero_extendqisi2
+	cmp	r8, #0
+	and	r6, r6, #255
+	andne	fp, fp, #255
+	andeq	fp, fp, #65280
+	orrne	fp, fp, r6, lsl #8
+	orreq	fp, fp, r6
+	strh	fp, [lr, r4]	@ movhi
+	b	.L25
+.L29:
 	cmp	r2, #2
-	ble	.L30
-	add	lr, r1, #1
-	add	lr, lr, lr, lsr #31
-	bic	lr, lr, #1
-	add	lr, r4, lr
-	str	r8, [ip, #44]
-	str	r10, [ip, #36]
-	str	lr, [ip, #40]
-	ldr	lr, [sp, #4]
-	str	lr, [ip, #44]
-.L30:
-	add	lr, fp, r1
-	add	lr, lr, lr, lsr #31
-	bic	lr, lr, #1
-	ldrh	r6, [r4, lr]
-	ldrb	r5, [sp, #56]	@ zero_extendqisi2
-	cmp	r9, #0
-	and	r5, r5, #255
-	andne	r6, r6, #255
-	andeq	r6, r6, #65280
-	orrne	r6, r6, r5, lsl #8
-	orreq	r6, r6, r5
-	strh	r6, [r4, lr]	@ movhi
-	b	.L36
-.L38:
+	ble	.L31
+	add	r4, r3, #1
+	add	r4, r4, r4, lsr #31
+	bic	r4, r4, #1
+	add	r4, lr, r4
+	str	r5, [ip, #44]
+	str	r9, [ip, #36]
+	str	r4, [ip, #40]
+	ldr	r4, [sp, #4]
+	str	r4, [ip, #44]
+.L31:
+	add	r4, r10, r3
+	add	r4, r4, r4, lsr #31
+	bic	r4, r4, #1
+	ldrh	fp, [lr, r4]
+	ldrb	r6, [sp, #56]	@ zero_extendqisi2
+	cmp	r8, #0
+	and	r6, r6, #255
+	andne	fp, fp, #255
+	andeq	fp, fp, #65280
+	orrne	fp, fp, r6, lsl #8
+	orreq	fp, fp, r6
+	strh	fp, [lr, r4]	@ movhi
+	b	.L38
+.L40:
 	.align	2
-.L37:
+.L39:
 	.word	.LANCHOR0
 	.size	drawRect4, .-drawRect4
 	.align	2
@@ -259,24 +261,25 @@ fillScreen3:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 8
 	@ frame_needed = 0, uses_anonymous_args = 0
-	@ link register save eliminated.
-	mov	ip, #0
-	sub	sp, sp, #8
-	ldr	r1, .L41
-	add	r2, sp, #8
-	strh	r0, [r2, #-2]!	@ movhi
-	ldm	r1, {r0, r3}
-	ldr	r1, .L41+4
-	str	ip, [r3, #44]
-	str	r2, [r3, #36]
-	str	r0, [r3, #40]
+	str	lr, [sp, #-4]!
+	mov	lr, #0
+	ldr	r2, .L43
+	sub	sp, sp, #12
+	ldm	r2, {r2, r3}
+	ldr	r1, .L43+4
+	add	ip, sp, #6
+	strh	r0, [sp, #6]	@ movhi
+	str	lr, [r3, #44]
+	str	ip, [r3, #36]
+	str	r2, [r3, #40]
 	str	r1, [r3, #44]
-	add	sp, sp, #8
+	add	sp, sp, #12
 	@ sp needed
+	ldr	lr, [sp], #4
 	bx	lr
-.L42:
+.L44:
 	.align	2
-.L41:
+.L43:
 	.word	.LANCHOR0
 	.word	-2130668032
 	.size	fillScreen3, .-fillScreen3
@@ -290,28 +293,29 @@ fillScreen4:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 16
 	@ frame_needed = 0, uses_anonymous_args = 0
-	@ link register save eliminated.
-	mov	ip, #0
-	sub	sp, sp, #16
+	str	lr, [sp, #-4]!
+	mov	lr, #0
+	sub	sp, sp, #20
 	strb	r0, [sp, #7]
-	ldrb	r3, [sp, #7]	@ zero_extendqisi2
-	ldrb	r0, [sp, #7]	@ zero_extendqisi2
-	ldr	r1, .L45
-	add	r2, sp, #16
-	orr	r3, r3, r0, lsl #8
-	strh	r3, [r2, #-2]!	@ movhi
+	ldr	r1, .L47
+	ldrb	r2, [sp, #7]	@ zero_extendqisi2
+	ldrb	ip, [sp, #7]	@ zero_extendqisi2
 	ldm	r1, {r0, r3}
-	ldr	r1, .L45+4
-	str	ip, [r3, #44]
-	str	r2, [r3, #36]
+	ldr	r1, .L47+4
+	orr	r2, r2, ip, lsl #8
+	add	ip, sp, #14
+	strh	r2, [sp, #14]	@ movhi
+	str	lr, [r3, #44]
+	str	ip, [r3, #36]
 	str	r0, [r3, #40]
 	str	r1, [r3, #44]
-	add	sp, sp, #16
+	add	sp, sp, #20
 	@ sp needed
+	ldr	lr, [sp], #4
 	bx	lr
-.L46:
+.L48:
 	.align	2
-.L45:
+.L47:
 	.word	.LANCHOR0
 	.word	-2130687232
 	.size	fillScreen4, .-fillScreen4
@@ -325,31 +329,32 @@ drawImage3:
 	@ Function supports interworking.
 	@ args = 4, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	cmp	r2, #0
-	bxle	lr
-	push	{r4, r5, lr}
+	push	{r4, r5, r6, lr}
+	subs	lr, r2, #0
+	ble	.L49
 	mov	r4, #0
-	ldr	r5, .L55
+	ldr	r6, .L55
 	rsb	r0, r0, r0, lsl #4
-	add	lr, r1, r0, lsl #4
-	ldr	r1, [r5]
-	add	r2, lr, r2
-	ldr	ip, [sp, #12]
-	ldr	r0, [r5, #4]
-	add	r2, r1, r2, lsl #1
-	add	r1, r1, lr, lsl #1
+	add	r5, r1, r0, lsl #4
+	ldr	r2, [r6]
+	add	r0, r5, lr
+	ldr	ip, [sp, #16]
+	ldr	r1, [r6, #4]
+	add	r0, r2, r0, lsl #1
 	orr	lr, r3, #-2147483648
+	add	r2, r2, r5, lsl #1
 	lsl	r3, r3, #1
-.L49:
-	str	r4, [r0, #44]
-	str	ip, [r0, #36]
-	str	r1, [r0, #40]
-	add	r1, r1, #2
-	cmp	r1, r2
-	str	lr, [r0, #44]
+.L51:
+	str	r4, [r1, #44]
+	str	ip, [r1, #36]
+	str	r2, [r1, #40]
+	add	r2, r2, #2
+	cmp	r2, r0
+	str	lr, [r1, #44]
 	add	ip, ip, r3
-	bne	.L49
-	pop	{r4, r5, lr}
+	bne	.L51
+.L49:
+	pop	{r4, r5, r6, lr}
 	bx	lr
 .L56:
 	.align	2
@@ -368,34 +373,34 @@ drawImage4:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	cmp	r2, #0
 	bxle	lr
-	push	{r4, r5, r6, lr}
+	push	{r4, r5, r6, r7, lr}
 	mov	r4, #0
-	ldr	r5, .L65
-	add	lr, r1, r2
+	ldr	r7, .L65
+	add	r2, r1, r2
 	add	r3, r3, r3, lsr #31
-	asr	r3, r3, #1
-	rsb	r1, r1, r1, lsl #4
-	rsb	lr, lr, lr, lsl #4
-	ldr	ip, [sp, #16]
-	ldr	r6, [r5]
-	ldr	r2, [r5, #4]
-	add	lr, r0, lr, lsl #4
-	orr	r5, r3, #-2147483648
-	add	r0, r0, r1, lsl #4
-	lsl	r1, r3, #1
+	asr	lr, r3, #1
+	rsb	r5, r1, r1, lsl #4
+	rsb	r3, r2, r2, lsl #4
+	ldr	ip, [sp, #20]
+	ldr	r6, [r7]
+	ldr	r2, [r7, #4]
+	add	r1, r0, r3, lsl #4
+	add	r0, r0, r5, lsl #4
+	orr	r5, lr, #-2147483648
+	lsl	lr, lr, #1
 .L59:
 	add	r3, r0, r0, lsr #31
 	bic	r3, r3, #1
 	add	r0, r0, #240
 	add	r3, r6, r3
-	cmp	r0, lr
+	cmp	r0, r1
 	str	r4, [r2, #44]
 	str	ip, [r2, #36]
 	str	r3, [r2, #40]
-	add	ip, ip, r1
+	add	ip, ip, lr
 	str	r5, [r2, #44]
 	bne	.L59
-	pop	{r4, r5, r6, lr}
+	pop	{r4, r5, r6, r7, lr}
 	bx	lr
 .L66:
 	.align	2
@@ -488,23 +493,21 @@ flipPage:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	mov	r3, #67108864
-	ldrh	r3, [r3]
+	mov	r1, #67108864
+	ldrh	r3, [r1]
 	tst	r3, #16
-	moveq	r1, #100663296
-	ldrne	r2, .L82
-	ldreq	r2, .L82
-	ldrne	r1, .L82+4
-	str	r1, [r2]
-	mov	r2, #67108864
+	ldr	r2, .L82
+	moveq	r2, #100663296
+	ldr	r0, .L82+4
 	eor	r3, r3, #16
-	strh	r3, [r2]	@ movhi
+	str	r2, [r0]
+	strh	r3, [r1]	@ movhi
 	bx	lr
 .L83:
 	.align	2
 .L82:
-	.word	.LANCHOR0
 	.word	100704256
+	.word	.LANCHOR0
 	.size	flipPage, .-flipPage
 	.align	2
 	.global	DMANow
@@ -519,11 +522,11 @@ DMANow:
 	push	{r4, lr}
 	mov	r4, #0
 	ldr	ip, .L86
-	add	r0, r0, r0, lsl #1
 	ldr	lr, [ip, #4]
-	lsl	r0, r0, #2
-	add	ip, lr, r0
+	add	r0, r0, r0, lsl #1
+	add	ip, lr, r0, lsl #2
 	orr	r3, r3, #-2147483648
+	lsl	r0, r0, #2
 	str	r4, [ip, #8]
 	str	r1, [lr, r0]
 	str	r2, [ip, #4]
@@ -614,4 +617,4 @@ videoBuffer:
 	.size	dma, 4
 dma:
 	.word	67109040
-	.ident	"GCC: (devkitARM release 47) 7.1.0"
+	.ident	"GCC: (devkitARM release 53) 9.1.0"

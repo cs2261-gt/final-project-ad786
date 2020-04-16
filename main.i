@@ -2,6 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
+# 14 "main.c"
 # 1 "myLib.h" 1
 
 
@@ -109,7 +110,9 @@ typedef struct{
 
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
-# 2 "main.c" 2
+# 15 "main.c" 2
+# 1 "game.h" 1
+# 16 "main.c" 2
 # 1 "start.h" 1
 # 22 "start.h"
 extern const unsigned short startTiles[768];
@@ -119,17 +122,17 @@ extern const unsigned short startMap[1024];
 
 
 extern const unsigned short startPal[256];
-# 3 "main.c" 2
+# 17 "main.c" 2
 # 1 "gameBackground.h" 1
 # 22 "gameBackground.h"
-extern const unsigned short gameBackgroundTiles[384];
+extern const unsigned short gameBackgroundTiles[416];
 
 
 extern const unsigned short gameBackgroundMap[1024];
 
 
 extern const unsigned short gameBackgroundPal[256];
-# 4 "main.c" 2
+# 18 "main.c" 2
 # 1 "instructions.h" 1
 # 22 "instructions.h"
 extern const unsigned short instructionsTiles[1440];
@@ -139,7 +142,7 @@ extern const unsigned short instructionsMap[1024];
 
 
 extern const unsigned short instructionsPal[256];
-# 5 "main.c" 2
+# 19 "main.c" 2
 # 1 "pause.h" 1
 # 22 "pause.h"
 extern const unsigned short pauseTiles[944];
@@ -149,7 +152,7 @@ extern const unsigned short pauseMap[1024];
 
 
 extern const unsigned short pausePal[256];
-# 6 "main.c" 2
+# 20 "main.c" 2
 # 1 "lose.h" 1
 # 22 "lose.h"
 extern const unsigned short loseTiles[880];
@@ -159,21 +162,45 @@ extern const unsigned short loseMap[1024];
 
 
 extern const unsigned short losePal[256];
-# 7 "main.c" 2
+# 21 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 8 "main.c" 2
+# 22 "main.c" 2
 # 1 "spritesheetNumbers.h" 1
 # 21 "spritesheetNumbers.h"
 extern const unsigned short spritesheetNumbersTiles[16384];
 
 
 extern const unsigned short spritesheetNumbersPal[256];
-# 9 "main.c" 2
+# 23 "main.c" 2
+# 1 "gameBack1.h" 1
+# 22 "gameBack1.h"
+extern const unsigned short gameBack1Tiles[16];
+
+
+extern const unsigned short gameBack1Map[1024];
+
+
+extern const unsigned short gameBack1Pal[256];
+# 24 "main.c" 2
+# 1 "helicopter.h" 1
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int rdel;
+} HELICOPTER;
+
+extern HELICOPTER helicopter;
+extern int topBoundary;
+extern int bottomBoundary;
+extern int endGame;
+# 25 "main.c" 2
 
 
 
@@ -211,9 +238,9 @@ int main() {
         }
     }
 }
-
 void initialize() {
     (*(volatile unsigned short*)0x4000008) = (0<<14) | (0<<7) | ((0)<<2) | ((28)<<8);
+    (*(volatile unsigned short*)0x400000A) = (0<<14) | (0<<7) | ((1)<<2) | ((30)<<8);
     (*(unsigned short *)0x4000000) = 0 | (1<<8) | (1<<12);
     hideSprites();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
@@ -229,6 +256,7 @@ void initialize() {
 void start() {
     seed++;
     (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         srand(seed);
@@ -236,12 +264,15 @@ void start() {
         goToGame();
     }
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))) {
+        srand(seed);
+        initGame();
         goToInstructions();
     }
 
 }
 void instructions() {
     (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
 
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))) {
         goToStart();
@@ -251,25 +282,31 @@ void instructions() {
     }
 
 }
+
+
 void game() {
+# 120 "main.c"
     updateGame();
     drawGame();
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
 
+    (*(volatile unsigned short *)0x04000010) = 0;
     hOff++;
-    (*(volatile unsigned short *)0x04000010) = hOff;
+    (*(volatile unsigned short *)0x04000014) = hOff;
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToPause();
     }
-    if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))) {
+    if (endGame == 1) {
         goToLose();
     }
-
 }
+
+
 void pause() {
     (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToGame();
@@ -281,6 +318,7 @@ void pause() {
 }
 void lose() {
     (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))) {
         goToStart();
@@ -316,9 +354,15 @@ void goToInstructions() {
 }
 
 void goToGame() {
+    DMANow(3, gameBack1Pal, ((unsigned short *)0x5000000), 512 / 2);
+    DMANow(3, gameBack1Tiles, &((charblock *)0x6000000)[1], 32 / 2);
+    DMANow(3, gameBack1Map, &((screenblock *)0x6000000)[30], 2048 / 2);
+
+
     DMANow(3, gameBackgroundPal, ((unsigned short *)0x5000000), 512 / 2);
-    DMANow(3, gameBackgroundTiles, &((charblock *)0x6000000)[0], 768 / 2);
+    DMANow(3, gameBackgroundTiles, &((charblock *)0x6000000)[0], 832 / 2);
     DMANow(3, gameBackgroundMap, &((screenblock *)0x6000000)[28], 2048 / 2);
+
 
     state = GAME;
 

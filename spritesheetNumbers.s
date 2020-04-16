@@ -9,6 +9,7 @@
 	.eabi_attribute 34, 0
 	.eabi_attribute 18, 4
 	.file	"spritesheetNumbers.c"
+	.text
 	.global	spritesheetNumbersPal
 	.global	spritesheetNumbersTiles
 	.section	.rodata
@@ -21,4 +22,4 @@ spritesheetNumbersPal:
 	.size	spritesheetNumbersTiles, 32768
 spritesheetNumbersTiles:
 	.space	32768
-	.ident	"GCC: (devkitARM release 47) 7.1.0"
+	.ident	"GCC: (devkitARM release 53) 9.1.0"
