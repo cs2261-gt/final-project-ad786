@@ -2,12 +2,12 @@
 #include "game.h"
 #include "myLib.h"
 
-
+//Global Variables
 BARRIERS barriers[BARRIERCOUNT];
 int barrierIndex;
 
 
-
+//Updating the barriers as they appear on screen
 void updateBarriers() {
     for (int i = 0; i < BARRIERCOUNT; i++) {
         if (barriers[i].active) {
@@ -26,7 +26,7 @@ void updateBarriers() {
         } 
     }
 }
-
+//Initializing pool of barriers
 void initBarriers() {
     for (int i = 0; i < BARRIERCOUNT; i++) {
         barriers[i].col = 200;

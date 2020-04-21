@@ -1,4 +1,4 @@
-
+//Coronavirus Struct
 typedef struct {
     int col;
     int row;
@@ -11,9 +11,13 @@ typedef struct {
     int rdel;
 } CORONAVIRUS;
 
-
+//Constants
 #define CORONAVIRUSCOUNT 3
-
+//External Variables
 extern CORONAVIRUS coronavirus[CORONAVIRUSCOUNT];
 extern int coronaIndex;
 extern int coronaTimer;
+
+//Prototypes
+void updateCoronavirus();
+void initCoronavirus();

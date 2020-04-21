@@ -159,13 +159,14 @@ initCoronavirus:
 	mov	lr, pc
 	bx	r6
 	mov	r2, #1
+	mov	ip, #4
 	mov	r1, #25
-	smull	r3, ip, r5, r0
+	smull	r3, lr, r5, r0
 	asr	r3, r0, #31
-	rsb	r3, r3, ip, asr #5
+	rsb	r3, r3, lr, asr #5
 	add	r3, r3, r3, lsl #2
 	str	r10, [r4, #24]
-	sub	r0, r0, r3, lsl #4
+	sub	r0, r0, r3, lsl ip
 	add	r10, r10, r2
 	add	r0, r0, #16
 	cmp	r10, #3
@@ -175,6 +176,7 @@ initCoronavirus:
 	str	r2, [r4, #32]
 	str	r1, [r4, #12]
 	str	r1, [r4, #8]
+	str	ip, [r4, #20]
 	add	r4, r4, #36
 	bne	.L34
 	str	r2, [r9, #16]

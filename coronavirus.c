@@ -2,13 +2,13 @@
 #include "coronavirus.h"
 #include "barriers.h"
 
-
+//Global variables
 CORONAVIRUS coronavirus[CORONAVIRUSCOUNT];
 int coronaIndex;
 int coronaTimer;
 
 
-
+//Updating movement of coronavirus
 void updateCoronavirus() {
     for (int i = 0; i < CORONAVIRUSCOUNT; i++) {
         if (coronavirus[i].active) {
@@ -47,12 +47,13 @@ void updateCoronavirus() {
 
             coronavirus[i].col = newCol; 
             coronavirus[i].row = (rand() % 85) + 16;
+            //coronavirus[i].active = 1;
             coronaTimer = 0;
         }
     }
 }
 
-
+//Initializing Coronavirus
 void initCoronavirus() {
     for (int i = 0; i < CORONAVIRUSCOUNT; i++) {
         coronavirus[i].col = 220;
@@ -63,6 +64,7 @@ void initCoronavirus() {
         coronavirus[i].width = 25;
         coronavirus[i].index = i;
         coronavirus[i].rdel = 1;
+        coronavirus[i].tileCol = 4;
     }
     coronavirus[0].active = 1;
 }

@@ -3,6 +3,7 @@
 # 1 "<command-line>"
 # 1 "barriers.c"
 # 1 "barriers.h" 1
+
 typedef struct {
     int col;
     int row;
@@ -19,8 +20,43 @@ typedef struct {
 
 extern BARRIERS barriers[3];
 extern int barrierIndex;
+
+
+void updateBarriers();
+void initBarriers();
 # 2 "barriers.c" 2
 # 1 "game.h" 1
+
+extern int onesCol;
+extern int scoreRow;
+extern int tensCol;
+extern int hundCol;
+extern int onesIndex;
+extern int tensIndex;
+extern int hundIndex;
+
+extern int scoreTimer;
+extern int scoreTimer2;
+extern int scoreTimer3;
+extern int helicopterTimer;
+
+
+
+
+
+
+
+void initGame();
+void drawGame();
+void updateGame();
+void updateScore();
+void drawScore();
+void displayScore();
+void drawHelicopter();
+void drawBarriers();
+void drawCoronavirus();
+void drawSoap();
+void drawPauseScreen();
 # 3 "barriers.c" 2
 # 1 "myLib.h" 1
 
@@ -30,9 +66,9 @@ extern int barrierIndex;
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
-# 64 "myLib.h"
+# 73 "myLib.h"
 extern unsigned short *videoBuffer;
-# 85 "myLib.h"
+# 94 "myLib.h"
 typedef struct {
  u16 tileimg[8192];
 } charblock;
@@ -75,7 +111,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 157 "myLib.h"
+# 166 "myLib.h"
 void hideSprites();
 
 
@@ -99,10 +135,10 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 200 "myLib.h"
+# 209 "myLib.h"
 extern unsigned short oldButtons;
 extern unsigned short buttons;
-# 211 "myLib.h"
+# 220 "myLib.h"
 typedef volatile struct {
     volatile const void *src;
     volatile void *dst;
@@ -111,9 +147,9 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 251 "myLib.h"
+# 260 "myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
-# 342 "myLib.h"
+# 351 "myLib.h"
 typedef struct{
     const unsigned char* data;
     int length;

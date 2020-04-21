@@ -10,9 +10,9 @@
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
-# 64 "myLib.h"
+# 73 "myLib.h"
 extern unsigned short *videoBuffer;
-# 85 "myLib.h"
+# 94 "myLib.h"
 typedef struct {
  u16 tileimg[8192];
 } charblock;
@@ -55,7 +55,7 @@ typedef struct {
 
 
 extern OBJ_ATTR shadowOAM[];
-# 157 "myLib.h"
+# 166 "myLib.h"
 void hideSprites();
 
 
@@ -79,10 +79,10 @@ typedef struct {
     int numFrames;
     int hide;
 } ANISPRITE;
-# 200 "myLib.h"
+# 209 "myLib.h"
 extern unsigned short oldButtons;
 extern unsigned short buttons;
-# 211 "myLib.h"
+# 220 "myLib.h"
 typedef volatile struct {
     volatile const void *src;
     volatile void *dst;
@@ -91,9 +91,9 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 251 "myLib.h"
+# 260 "myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
-# 342 "myLib.h"
+# 351 "myLib.h"
 typedef struct{
     const unsigned char* data;
     int length;
@@ -111,22 +111,64 @@ typedef struct{
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 # 2 "helicopter.c" 2
 # 1 "game.h" 1
+
+extern int onesCol;
+extern int scoreRow;
+extern int tensCol;
+extern int hundCol;
+extern int onesIndex;
+extern int tensIndex;
+extern int hundIndex;
+
+extern int scoreTimer;
+extern int scoreTimer2;
+extern int scoreTimer3;
+extern int helicopterTimer;
+
+
+
+
+
+
+
+void initGame();
+void drawGame();
+void updateGame();
+void updateScore();
+void drawScore();
+void displayScore();
+void drawHelicopter();
+void drawBarriers();
+void drawCoronavirus();
+void drawSoap();
+void drawPauseScreen();
 # 3 "helicopter.c" 2
 # 1 "helicopter.h" 1
+
 typedef struct {
     int row;
     int col;
     int width;
     int height;
     int rdel;
+    int tileCol;
 } HELICOPTER;
+
 
 extern HELICOPTER helicopter;
 extern int topBoundary;
 extern int bottomBoundary;
 extern int endGame;
+extern int end;
+
+
+
+void updateHelicopter();
+void endScene();
+void initHelicopter();
 # 4 "helicopter.c" 2
 # 1 "soap.h" 1
+
 typedef struct {
     int row;
     int col;
@@ -142,8 +184,16 @@ typedef struct {
 extern SOAP soap[6];
 extern int soapIndex;
 extern int soapCol;
+extern int cheat;
+
+
+void cheatSoap();
+void updateSoap();
+void fireSoap();
+void initSoap();
 # 5 "helicopter.c" 2
 # 1 "barriers.h" 1
+
 typedef struct {
     int col;
     int row;
@@ -160,6 +210,10 @@ typedef struct {
 
 extern BARRIERS barriers[3];
 extern int barrierIndex;
+
+
+void updateBarriers();
+void initBarriers();
 # 6 "helicopter.c" 2
 # 1 "coronavirus.h" 1
 
@@ -181,12 +235,48 @@ typedef struct {
 extern CORONAVIRUS coronavirus[3];
 extern int coronaIndex;
 extern int coronaTimer;
+
+
+void updateCoronavirus();
+void initCoronavirus();
 # 7 "helicopter.c" 2
+# 1 "shoot.h" 1
+
+
+
+
+extern const signed char shoot[1998];
+# 8 "helicopter.c" 2
+# 1 "sound.h" 1
+SOUND soundA;
+SOUND soundB;
+
+
+
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void setupInterrupts();
+void interruptHandler();
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+# 9 "helicopter.c" 2
+# 1 "loseSong.h" 1
+
+
+
+
+extern const signed char loseSong[140883];
+# 10 "helicopter.c" 2
 
 HELICOPTER helicopter;
 int topBoundary;
 int bottomBoundary;
 int endGame;
+int end;
 
 
 void updateHelicopter() {
@@ -207,10 +297,16 @@ void updateHelicopter() {
 
     helicopter.rdel += 22;
 
-    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && soapIndex > 0) {
+    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && soapIndex > 0 && !cheat) {
+        playSoundB(shoot, 1998, 0);
         fireSoap();
         soapIndex--;
     }
+    if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && cheat) {
+        playSoundB(shoot, 1998, 0);
+        fireSoap();
+    }
+
 
 
 
@@ -231,7 +327,10 @@ void updateHelicopter() {
                 coronavirus[c].col, coronavirus[c].row, coronavirus[c].width, coronavirus[c].height)) {
 
 
-                    endGame = 1;
+                    end = 1;
+                    helicopter.rdel = 0;
+                    stopSound();
+                    playSoundA(loseSong, 140883, 0);
 
 
         }
@@ -242,10 +341,25 @@ void updateHelicopter() {
                 barriers[b].col, barriers[b].row, barriers[b].width, barriers[b].height)) {
 
 
-                    endGame = 1;
+                    end = 1;
+                    helicopter.rdel = 0;
+                    stopSound();
+                    playSoundA(loseSong, 140883, 0);
+
 
         }
     }
+}
+
+void endScene() {
+    helicopter.row += helicopter.rdel;
+    helicopter.rdel += 15;
+
+
+    if (((helicopter.row + helicopter.rdel) >> 8) > 145) {
+        endGame = 1;
+    }
+
 }
 
 
@@ -255,4 +369,5 @@ void initHelicopter() {
     helicopter.height = 19;
     helicopter.width = 30;
     helicopter.rdel = 1;
+    helicopter.tileCol = 0;
 }

@@ -3,13 +3,18 @@
 #include "soap.h"
 #include "helicopter.h"
 
-
+//Global Variables
 SOAP soap[SOAPCOUNT];
 int soapIndex;
 int soapCol;
-int scoreRow;
+int cheat;
 
-
+//Creating the cheat after L and R are pressed
+void cheatSoap() {
+    soapIndex = 10;
+    cheat = 1;
+}
+//updating the soap to move across screen
 void updateSoap() {
     for (int i = 0; i < SOAPCOUNT; i++) {
         if (soap[i].active) {
@@ -21,7 +26,7 @@ void updateSoap() {
         }
     }
 }
-
+//Fire soap method to fire upon button pressed
 void fireSoap() {
     for (int i = 0; i < SOAPCOUNT; i++) {
         if (!soap[i].active) {
@@ -34,8 +39,7 @@ void fireSoap() {
     }
 }
 
-
-
+//initialize pool of soap
 void initSoap() {
     for (int i = 0; i < SOAPCOUNT; i++) {
         soap[i].col = 0;

@@ -56,6 +56,15 @@ typedef unsigned int u32;
 // Display Status Registers
 #define SCANLINECOUNTER (*(volatile unsigned short *)0x4000006)
 
+//Blending Registers
+// #define REG_BLDCNT (*(volatile unsigned short*)0x04000050)
+// #define BLD_OBJa            (1<<4) // blend sprites
+
+// #define BLD_WHITE           (1<<7) // white alpha blending
+// #define BLD_BLACK           (3<<6) // black alpha blending
+
+// #define REG_BLDY (*(volatile unsigned short*)0x04000054) // hold blending weights
+
 // Display Constants
 #define SCREENHEIGHT 160
 #define SCREENWIDTH  240

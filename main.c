@@ -1,16 +1,5 @@
-/* Finished So Far: All details/gameplay of the game, all barriers, virus, helicopter things are done
-Needs to be Added: All backgrounds, Pause state needs paralax, Sound, Cheat - unlimited Soap, animations
-Also want to add: pause when hitting something, and have copter fall downwards
-Want to add: final score on the game over page
-Small Bug: on the left side of screen, very small, you can see the virus lining
-
-How to Play: after starting, press and hold up button to accelerate copter to go up, let go for gravity to push copter down
-Survive as long as possible, can shoot soap with A to kill virus, but only have 6!
-
-Questions for TA: 1. Any idea how to fix the small lining bug on the left side of screen when starting and throughout game?
-2. I like the two viruses that come up together occasionally, which will act as "boss" barrier. Will Aaron count that as a bug?
+/* CHEAT: Press L and R together to get unlimited soap, you will see infinity sign in bottom right when activated
 */
-
 #include "myLib.h"
 #include "game.h"
 #include "start.h"
@@ -22,15 +11,35 @@ Questions for TA: 1. Any idea how to fix the small lining bug on the left side o
 #include "spritesheetNumbers.h"
 #include "gameBack1.h"
 #include "helicopter.h"
+#include "pausebg1.h"
+#include "soap.h"
+#include "startSong.h"
+#include "gameSong.h"
+#include "loseSong.h"
+#include "shoot.h"
+#include "pauseSong.h"
+#include "sound.h"
+//Prototypes
+void initialize();
+void start();
+void instructions();
+void game();
+void pause();
+void lose();
+void goToStart();
+void goToInstructions();
+void goToGame();
+void goToPause();
+void goToLose();
 
 
-
+//States
 int state;
 enum {START, INSTRUCTIONS, GAME, PAUSE, LOSE};
-
+//Button Variables
 unsigned short buttons;
 unsigned short oldButtons;
-
+//Random seed and hoff
 unsigned short hOff;
 int seed;
 
@@ -59,6 +68,7 @@ int main() {
         }
     }
 }
+//Set up mode 0, two backgrounds, and spritesheet, and sound
 void initialize() {
     REG_BG0CNT = BG_SIZE_SMALL | BG_4BPP | BG_CHARBLOCK(0) | BG_SCREENBLOCK(28);
     REG_BG1CNT = BG_SIZE_SMALL | BG_4BPP | BG_CHARBLOCK(1) | BG_SCREENBLOCK(30);
@@ -70,88 +80,133 @@ void initialize() {
     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen / 2);
     hideSprites();
 
+    setupInterrupts();
+    setupSounds();
+
     hOff = 0;
     goToStart();
 }
-
+//Start state, initializes seed and game
 void start() {
     seed++;
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
     
     if (BUTTON_PRESSED(BUTTON_START)) {
+        stopSound();
+        playSoundA(gameSong, GAMESONGLEN, 1);
+
         srand(seed);
         initGame();
         goToGame();
     }
     if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        pauseSound();
+
         srand(seed);
         initGame();
         goToInstructions();
     }
 
 }
+//Instructions state, takes you back to start or game
 void instructions() {
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
 
     if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        unpauseSound();
+
         goToStart();
     }
     if (BUTTON_PRESSED(BUTTON_START)) {
+        stopSound();
+        playSoundA(gameSong, GAMESONGLEN, 1);
+
         goToGame();
     }
 
 }
 
-
+//Game state, update, draw, wait, DMA
 void game() {
-    // if (end == 0) {
-    //     updateGame();
-    //     REG_BG0HOFF = 0;
-    //     hOff++;
-    //     REG_BG1HOFF = hOff;
-    // } else {
-    //     helicopter.row++;
-    //     if (helicopter.row == 140) {
-    //         endGame = 1;
-    //     }
-    // }
-    updateGame();
+    if (end == 0) {
+        updateGame();
+        REG_BG0HOFF = 0;
+        hOff++;
+        REG_BG1HOFF = hOff;
+    } else {
+        endScene();
+    }
+    //updateGame();
     drawGame();
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);
 
-    REG_BG0HOFF = 0;
-    hOff++;
-    REG_BG1HOFF = hOff;
+
 
     if (BUTTON_PRESSED(BUTTON_START)) {
+        pauseSound();
+        playSoundB(pauseSong, PAUSESONGLEN - 50, 1);
+
         goToPause();
     }
     if (endGame == 1) {
+        pauseSound();
+
+
         goToLose();
+    }
+    if (BUTTON_PRESSED(BUTTON_L) && BUTTON_PRESSED(BUTTON_R)) {
+        cheatSoap();
     }
 }
 
-
+// Pause state to go from game and pause screen
 void pause() {
-    REG_BG0HOFF = 0;
-    REG_BG1HOFF = 0;
+    //REG_BG0HOFF = 0;
+    //REG_BG1HOFF = 0;
+
 
     if (BUTTON_PRESSED(BUTTON_START)) {
+        stopSound();
+        unpauseSound();
+        
         goToGame();
     }
     if (BUTTON_PRESSED(BUTTON_SELECT)) {
+        stopSound();
+
+        playSoundA(startSong, STARTSONGLEN - 225, 1);
+
         goToStart();
     }
+
+    if (BUTTON_HELD(BUTTON_LEFT)) {
+        hOff--;
+    }
+    if (BUTTON_HELD(BUTTON_RIGHT)) {
+        hOff++;
+    }
+    
+    REG_BG0HOFF = hOff;
+    REG_BG1HOFF = hOff / 2;
+    waitForVBlank();
+
     
 }
+//Lose state to go back to beginning
 void lose() {
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
 
+    
+    displayScore();
+
     if (BUTTON_PRESSED(BUTTON_START)) {
+        stopSound();
+        playSoundA(startSong, STARTSONGLEN - 225, 1);
+
         goToStart();
     }
 
@@ -161,6 +216,10 @@ void lose() {
 
 
 
+
+
+//State-transition States
+//Sets up start page and function
 void goToStart() {
     hideSprites();
     DMANow(3, shadowOAM, OAM, 512);
@@ -169,9 +228,11 @@ void goToStart() {
     DMANow(3, startTiles, &CHARBLOCK[0], startTilesLen / 2);
     DMANow(3, startMap, &SCREENBLOCK[28], startMapLen / 2);
 
+    playSoundA(startSong, STARTSONGLEN - 225, 1);
+
     state = START;
 }
-
+//Sets up instructions page and function
 void goToInstructions() {
     hideSprites();
     DMANow(3, shadowOAM, OAM, 512);
@@ -182,9 +243,12 @@ void goToInstructions() {
 
     state = INSTRUCTIONS;
 
-}
 
+}
+//sets up game page w multiple background and function
 void goToGame() {
+    REG_DISPCTL = MODE0 | BG0_ENABLE | BG1_ENABLE  | SPRITE_ENABLE;
+
     DMANow(3, gameBack1Pal, PALETTE, gameBack1PalLen / 2);
     DMANow(3, gameBack1Tiles, &CHARBLOCK[1], gameBack1TilesLen / 2);
     DMANow(3, gameBack1Map, &SCREENBLOCK[30], gameBack1MapLen / 2);
@@ -195,24 +259,41 @@ void goToGame() {
     DMANow(3, gameBackgroundMap, &SCREENBLOCK[28], gameBackgroundMapLen / 2);
 
 
+
     state = GAME;
 
 }
 
+//sets up pause screen and function
 void goToPause() {
     hideSprites();
+
+    drawPauseScreen();
     DMANow(3, shadowOAM, OAM, 512);
+    hideSprites();
+
+    REG_DISPCTL = MODE0 | BG0_ENABLE | BG1_ENABLE | SPRITE_ENABLE;
+
+    DMANow(3, pausebg1Tiles, &CHARBLOCK[1], pausebg1TilesLen / 2);
+    DMANow(3, pausebg1Map, &SCREENBLOCK[30], pausebg1MapLen / 2);
 
     DMANow(3, pausePal, PALETTE, pausePalLen / 2);
     DMANow(3, pauseTiles, &CHARBLOCK[0], pauseTilesLen / 2);
     DMANow(3, pauseMap, &SCREENBLOCK[28], pauseMapLen / 2);
 
+    hOff = 0;
     state = PAUSE;
 }
-
+//Sets up lose screen and function
 void goToLose() {
+
+    unpauseSound();
+
     hideSprites();
+    displayScore();
+    waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);
+
 
     DMANow(3, losePal, PALETTE, losePalLen / 2);
     DMANow(3, loseTiles, &CHARBLOCK[0], loseTilesLen / 2);
